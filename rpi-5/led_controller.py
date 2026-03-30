@@ -121,6 +121,58 @@ def flash(color=(0, 255, 0), duration=0.4):
     _strip.show()
 
 
+def startup_animation():
+    """Quick rainbow comet swirl that collapses into a white flash."""
+    tail = 8
+    # Two laps of rainbow comet, accelerating
+    steps = LED_COUNT * 2
+    for step in range(steps):
+        head = step % LED_COUNT
+        speed_factor = 1.0 - (step / steps) * 0.7  # accelerate
+        hue_offset = step * 10
+        for i in range(LED_COUNT):
+            dist = (head - i) % LED_COUNT
+            if dist < tail:
+                fade = 1.0 - (dist / tail)
+                hue = (hue_offset + i * 256 // LED_COUNT) % 256
+                r, g, b = _wheel(hue)
+                _strip[i] = (int(r * fade), int(g * fade), int(b * fade))
+            else:
+                _strip[i] = (0, 0, 0)
+        _strip.show()
+        time.sleep(0.02 * speed_factor)
+
+    # Converge: all LEDs light up in a quick cascade
+    for count in range(LED_COUNT):
+        _strip[count] = (255, 255, 255)
+        _strip.show()
+        time.sleep(0.015)
+
+    # Brief white hold then fade out
+    time.sleep(0.2)
+    for bright in range(100, -1, -4):
+        val = int(255 * bright / 100)
+        _strip.fill((val, val, val))
+        _strip.show()
+        time.sleep(0.015)
+
+    _strip.fill((0, 0, 0))
+    _strip.show()
+
+
+def _wheel(pos):
+    """Color wheel: 0-255 -> RGB."""
+    pos = pos % 256
+    if pos < 85:
+        return (255 - pos * 3, pos * 3, 0)
+    elif pos < 170:
+        pos -= 85
+        return (0, 255 - pos * 3, pos * 3)
+    else:
+        pos -= 170
+        return (pos * 3, 0, 255 - pos * 3)
+
+
 def clear_strip():
     """Turn off all LEDs."""
     if _strip is not None:

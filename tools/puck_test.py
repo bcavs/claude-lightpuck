@@ -211,6 +211,42 @@ def _wheel(pos):
         return (pos * 3, 0, 255 - pos * 3)
 
 
+def startup(num_pixels=NUM_PIXELS):
+    """Rainbow comet swirl that collapses into a white flash."""
+    tail = 8
+    steps = num_pixels * 2
+    for step in range(steps):
+        head = step % num_pixels
+        speed_factor = 1.0 - (step / steps) * 0.7
+        hue_offset = step * 10
+        for i in range(num_pixels):
+            dist = (head - i) % num_pixels
+            if dist < tail:
+                fade = 1.0 - (dist / tail)
+                hue = (hue_offset + i * 256 // num_pixels) % 256
+                r, g, b = _wheel(hue)
+                pixels[i] = (int(r * fade), int(g * fade), int(b * fade))
+            else:
+                pixels[i] = (0, 0, 0)
+        pixels.show()
+        time.sleep(0.02 * speed_factor)
+
+    for count in range(num_pixels):
+        pixels[count] = (255, 255, 255)
+        pixels.show()
+        time.sleep(0.015)
+
+    time.sleep(0.2)
+    for bright in range(100, -1, -4):
+        val = int(255 * bright / 100)
+        pixels.fill((val, val, val))
+        pixels.show()
+        time.sleep(0.015)
+
+    pixels.fill((0, 0, 0))
+    pixels.show()
+
+
 ANIMATIONS = {
     "fill": fill_up,
     "rainbow": rainbow_cycle,
@@ -223,6 +259,7 @@ ANIMATIONS = {
     "clock": clock,
     "dual": dual_ring,
     "flash": status_flash,
+    "startup": startup,
 }
 
 

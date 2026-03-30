@@ -13,7 +13,7 @@ from http.server import ThreadingHTTPServer
 from config import HOST, HTTP_PORT, LED_COUNT, MODE, HEARTBEAT_TIMEOUT
 from led_controller import (
     init_strip, update_strip, update_strip_dual, clear_strip, percent_to_leds,
-    heartbeat_breathe, flash, clock_sweep,
+    heartbeat_breathe, flash, clock_sweep, startup_animation,
 )
 import server
 
@@ -24,6 +24,7 @@ def _is_connected():
 
 def main() -> None:
     init_strip()
+    startup_animation()
 
     httpd = ThreadingHTTPServer((HOST, HTTP_PORT), server.LightpuckHandler)
     server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
