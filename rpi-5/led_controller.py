@@ -88,6 +88,21 @@ def update_strip_dual(five_hour_pct, seven_day_pct):
     )
 
 
+def clock_sweep():
+    """A dim blue dot sweeps around the ring once per minute, with a fading tail."""
+    seconds = time.time() % 60
+    pos = seconds / 60.0 * LED_COUNT
+    tail = 4
+    for i in range(LED_COUNT):
+        dist = (pos - i) % LED_COUNT
+        if dist < tail:
+            fade = 1.0 - (dist / tail)
+            _strip[i] = (0, 0, int(80 * fade * fade))
+        else:
+            _strip[i] = (0, 0, 0)
+    _strip.show()
+
+
 def heartbeat_breathe():
     """Slow amber breathing pulse — called repeatedly from the main loop."""
     bright = (math.sin(time.time() * 1.5 - math.pi / 2) + 1) / 2
