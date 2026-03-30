@@ -1,6 +1,6 @@
 LED_PIN = 18
 LED_COUNT = 24
-MODE = "five_hour"  # or "seven_day"
+MODE = "dual"  # "five_hour", "seven_day", or "dual"
 
 HEARTBEAT_TIMEOUT = 120  # seconds with no data before showing disconnected animation
 

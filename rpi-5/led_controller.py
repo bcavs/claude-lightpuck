@@ -64,6 +64,30 @@ def update_strip(percent, leds_on, total_leds, mode):
     )
 
 
+def update_strip_dual(five_hour_pct, seven_day_pct):
+    """Drive two halves of the ring: first 12 = five-hour, last 12 = seven-day."""
+    half = LED_COUNT // 2
+
+    five_on = percent_to_leds(five_hour_pct, half)
+    five_color = _usage_color(five_hour_pct)
+
+    seven_on = percent_to_leds(seven_day_pct, half)
+    seven_color = _usage_color(seven_day_pct)
+
+    for i in range(half):
+        _strip[i] = five_color if i < five_on else (0, 0, 0)
+    for i in range(half):
+        _strip[half + i] = seven_color if i < seven_on else (0, 0, 0)
+    _strip.show()
+
+    bar5 = "#" * five_on + "." * (half - five_on)
+    bar7 = "#" * seven_on + "." * (half - seven_on)
+    print(
+        "[LED] dual | 5h=%s%% %d/%d %s | 7d=%s%% %d/%d %s"
+        % (five_hour_pct, five_on, half, bar5, seven_day_pct, seven_on, half, bar7)
+    )
+
+
 def heartbeat_breathe():
     """Slow amber breathing pulse — called repeatedly from the main loop."""
     bright = (math.sin(time.time() * 1.5 - math.pi / 2) + 1) / 2
