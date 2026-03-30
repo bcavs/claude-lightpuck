@@ -54,7 +54,7 @@ def main() -> None:
                         stop.wait(0.05)
                     else:
                         update_strip_dual(five, seven)
-                        stop.wait(5)
+                        stop.wait(0.05)
                 else:
                     percent = server.latest_usage.get(f"{MODE}_utilization", 0)
                     is_idle = percent == 0
@@ -64,7 +64,7 @@ def main() -> None:
                     else:
                         leds_on = percent_to_leds(percent, LED_COUNT)
                         update_strip(percent, leds_on, LED_COUNT, MODE)
-                        stop.wait(5)
+                        stop.wait(0.05)
             else:
                 heartbeat_breathe()
                 stop.wait(0.05)

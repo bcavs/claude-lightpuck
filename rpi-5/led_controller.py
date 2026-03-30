@@ -35,6 +35,26 @@ def percent_to_leds(percent, total_leds):
     return int((percent / 100.0) * total_leds)
 
 
+SPARK_PERIOD = 3.0  # seconds per sweep across the lit LEDs
+
+
+def _spark_overlay(base_color, index, leds_on):
+    """Blend a white spark onto a lit LED. Returns the modified color."""
+    if leds_on <= 0:
+        return base_color
+    # Spark position cycles through the lit range
+    pos = (time.time() % SPARK_PERIOD) / SPARK_PERIOD * leds_on
+    dist = abs(index - pos)
+    if dist > 1.0:
+        return base_color
+    # Blend toward white based on proximity
+    blend = 1.0 - dist
+    r = int(base_color[0] + (255 - base_color[0]) * blend * 0.7)
+    g = int(base_color[1] + (255 - base_color[1]) * blend * 0.7)
+    b = int(base_color[2] + (255 - base_color[2]) * blend * 0.7)
+    return (r, g, b)
+
+
 def _usage_color(percent):
     """Green at 0%, yellow at 50%, red at 100%."""
     p = max(0, min(100, float(percent)))
@@ -48,10 +68,13 @@ def _usage_color(percent):
 
 
 def update_strip(percent, leds_on, total_leds, mode):
-    """Drive the NeoPixel strip and log state to console."""
+    """Drive the NeoPixel strip with a trailing spark on lit LEDs."""
     color = _usage_color(percent)
     for i in range(total_leds):
-        _strip[i] = color if i < leds_on else (0, 0, 0)
+        if i < leds_on:
+            _strip[i] = _spark_overlay(color, i, leds_on)
+        else:
+            _strip[i] = (0, 0, 0)
     _strip.show()
 
     if total_leds <= 0:
@@ -75,9 +98,15 @@ def update_strip_dual(five_hour_pct, seven_day_pct):
     seven_color = _usage_color(seven_day_pct)
 
     for i in range(half):
-        _strip[i] = five_color if i < five_on else (0, 0, 0)
+        if i < five_on:
+            _strip[i] = _spark_overlay(five_color, i, five_on)
+        else:
+            _strip[i] = (0, 0, 0)
     for i in range(half):
-        _strip[half + i] = seven_color if i < seven_on else (0, 0, 0)
+        if i < seven_on:
+            _strip[half + i] = _spark_overlay(seven_color, i, seven_on)
+        else:
+            _strip[half + i] = (0, 0, 0)
     _strip.show()
 
     bar5 = "#" * five_on + "." * (half - five_on)
@@ -111,7 +140,10 @@ def update_strip_split(percent):
     leds_on = percent_to_leds(percent, half)
     color = _usage_color(percent)
     for i in range(half):
-        _strip[i] = color if i < leds_on else (0, 0, 0)
+        if i < leds_on:
+            _strip[i] = _spark_overlay(color, i, leds_on)
+        else:
+            _strip[i] = (0, 0, 0)
 
     # Bottom half: clock sweep (one lap per minute across 12 LEDs)
     seconds = time.time() % 60
