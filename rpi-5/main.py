@@ -12,7 +12,7 @@ from http.server import ThreadingHTTPServer
 
 from config import HOST, HTTP_PORT, LED_COUNT, MODE, HEARTBEAT_TIMEOUT
 from led_controller import (
-    init_strip, update_strip, clear_strip, percent_to_leds, heartbeat_breathe,
+    init_strip, update_strip, clear_strip, percent_to_leds, heartbeat_breathe, flash,
 )
 import server
 
@@ -30,9 +30,15 @@ def main() -> None:
     print("HTTP server on http://%s:%s (POST /update, GET /health)" % (HOST, HTTP_PORT))
 
     stop = threading.Event()
+    last_seen = 0.0
     try:
         while not stop.is_set():
             if _is_connected():
+                # Green flash when new data arrives
+                if server.last_update_time != last_seen:
+                    last_seen = server.last_update_time
+                    flash((0, 255, 0))
+
                 percent = server.latest_usage.get(f"{MODE}_utilization", 0)
                 leds_on = percent_to_leds(percent, LED_COUNT)
                 update_strip(percent, leds_on, LED_COUNT, MODE)

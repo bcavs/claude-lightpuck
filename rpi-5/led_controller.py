@@ -73,6 +73,15 @@ def heartbeat_breathe():
     _strip.show()
 
 
+def flash(color=(0, 255, 0), duration=0.4):
+    """Brief full-ring flash, then off. Called from the main thread."""
+    _strip.fill(color)
+    _strip.show()
+    time.sleep(duration)
+    _strip.fill((0, 0, 0))
+    _strip.show()
+
+
 def clear_strip():
     """Turn off all LEDs."""
     if _strip is not None:
