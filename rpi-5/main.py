@@ -14,17 +14,17 @@ from config import HOST, HTTP_PORT, LED_COUNT, MODE, HEARTBEAT_TIMEOUT
 from led_controller import (
     init_strip, update_strip, clear_strip, percent_to_leds, heartbeat_breathe,
 )
-from server import LightpuckHandler, latest_usage, last_update_time
+import server
 
 
 def _is_connected():
-    return last_update_time > 0 and (time.monotonic() - last_update_time) < HEARTBEAT_TIMEOUT
+    return server.last_update_time > 0 and (time.monotonic() - server.last_update_time) < HEARTBEAT_TIMEOUT
 
 
 def main() -> None:
     init_strip()
 
-    httpd = ThreadingHTTPServer((HOST, HTTP_PORT), LightpuckHandler)
+    httpd = ThreadingHTTPServer((HOST, HTTP_PORT), server.LightpuckHandler)
     server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     server_thread.start()
     print("HTTP server on http://%s:%s (POST /update, GET /health)" % (HOST, HTTP_PORT))
@@ -33,7 +33,7 @@ def main() -> None:
     try:
         while not stop.is_set():
             if _is_connected():
-                percent = latest_usage.get(f"{MODE}_utilization", 0)
+                percent = server.latest_usage.get(f"{MODE}_utilization", 0)
                 leds_on = percent_to_leds(percent, LED_COUNT)
                 update_strip(percent, leds_on, LED_COUNT, MODE)
                 stop.wait(5)
