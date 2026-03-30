@@ -33,16 +33,13 @@ def main() -> None:
 
     httpd = ThreadingHTTPServer((HOST, HTTP_PORT), LightpuckHandler)
 
-    def _shutdown(*_args):
-        print("Shutting down...")
-        stop.set()
-        httpd.shutdown()
-
-    signal.signal(signal.SIGINT, _shutdown)
-    signal.signal(signal.SIGTERM, _shutdown)
-
     print("HTTP server on http://%s:%s (POST /update, GET /health)" % (HOST, HTTP_PORT))
-    httpd.serve_forever()
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    print("Shutting down...")
+    stop.set()
     httpd.server_close()
 
 
