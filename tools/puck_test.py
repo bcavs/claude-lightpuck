@@ -128,6 +128,76 @@ def fire(duration=5):
         time.sleep(0.03)
 
 
+def heartbeat(duration=6):
+    """Slow amber breathing pulse — disconnected indicator."""
+    start = time.time()
+    while time.time() - start < duration:
+        bright = (math.sin(time.time() * 1.5 - math.pi / 2) + 1) / 2
+        r = int(255 * bright)
+        g = int(100 * bright)
+        pixels.fill((r, g, 0))
+        pixels.show()
+        time.sleep(0.02)
+
+
+def clock(duration=10):
+    """Blue dot with fading tail sweeps the ring — one lap per minute."""
+    start = time.time()
+    tail = 4
+    while time.time() - start < duration:
+        seconds = time.time() % 60
+        pos = seconds / 60.0 * NUM_PIXELS
+        for i in range(NUM_PIXELS):
+            dist = (pos - i) % NUM_PIXELS
+            if dist < tail:
+                fade = 1.0 - (dist / tail)
+                pixels[i] = (0, 0, int(80 * fade * fade))
+            else:
+                pixels[i] = (0, 0, 0)
+        pixels.show()
+        time.sleep(0.05)
+
+
+def dual_ring(duration=5):
+    """Simulate dual mode: first half = 5h usage, second half = 7d usage."""
+    half = NUM_PIXELS // 2
+    five_pct = 65
+    seven_pct = 40
+
+    def usage_color(pct):
+        if pct <= 50:
+            return (int(255 * pct / 50), 255, 0)
+        return (255, int(255 * (100 - pct) / 50), 0)
+
+    five_on = int(five_pct / 100.0 * half)
+    seven_on = int(seven_pct / 100.0 * half)
+    five_color = usage_color(five_pct)
+    seven_color = usage_color(seven_pct)
+
+    for i in range(half):
+        pixels[i] = five_color if i < five_on else (0, 0, 0)
+    for i in range(half):
+        pixels[half + i] = seven_color if i < seven_on else (0, 0, 0)
+    pixels.show()
+    print("  5h: %d%% (%d/%d)  7d: %d%% (%d/%d)" % (five_pct, five_on, half, seven_pct, seven_on, half))
+    time.sleep(duration)
+
+
+def status_flash():
+    """Green flash simulating data received."""
+    pixels.fill((0, 255, 0))
+    pixels.show()
+    time.sleep(0.4)
+    pixels.fill((0, 0, 0))
+    pixels.show()
+    time.sleep(0.3)
+    pixels.fill((0, 255, 0))
+    pixels.show()
+    time.sleep(0.4)
+    pixels.fill((0, 0, 0))
+    pixels.show()
+
+
 def _wheel(pos):
     """Color wheel: 0-255 -> RGB, cycling R->G->B."""
     pos = pos % 256
@@ -149,6 +219,10 @@ ANIMATIONS = {
     "comet": comet,
     "sparkle": sparkle,
     "fire": fire,
+    "heartbeat": heartbeat,
+    "clock": clock,
+    "dual": dual_ring,
+    "flash": status_flash,
 }
 
 
