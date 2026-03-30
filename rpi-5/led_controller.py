@@ -15,6 +15,19 @@ _BOARD_PINS = {
 }
 
 _strip = None
+_last_log_msg = None
+_last_log_time = 0.0
+LOG_INTERVAL = 5.0
+
+
+def _log(msg):
+    """Only print if the message changed or LOG_INTERVAL has elapsed."""
+    global _last_log_msg, _last_log_time
+    now = time.time()
+    if msg != _last_log_msg or (now - _last_log_time) >= LOG_INTERVAL:
+        print(msg)
+        _last_log_msg = msg
+        _last_log_time = now
 
 
 def init_strip():
@@ -78,10 +91,10 @@ def update_strip(percent, leds_on, total_leds, mode):
     _strip.show()
 
     if total_leds <= 0:
-        print("[LED] mode=%s — no pixels configured" % mode)
+        _log("[LED] mode=%s — no pixels configured" % mode)
         return
     bar = "#" * leds_on + "." * (total_leds - leds_on)
-    print(
+    _log(
         "[LED] mode=%s util=%s%% | %d/%d on | %s"
         % (mode, percent, leds_on, total_leds, bar)
     )
@@ -111,7 +124,7 @@ def update_strip_dual(five_hour_pct, seven_day_pct):
 
     bar5 = "#" * five_on + "." * (half - five_on)
     bar7 = "#" * seven_on + "." * (half - seven_on)
-    print(
+    _log(
         "[LED] dual | 5h=%s%% %d/%d %s | 7d=%s%% %d/%d %s"
         % (five_hour_pct, five_on, half, bar5, seven_day_pct, seven_on, half, bar7)
     )
@@ -160,7 +173,7 @@ def update_strip_split(percent):
     _strip.show()
 
     bar = "#" * leds_on + "." * (half - leds_on)
-    print(
+    _log(
         "[LED] split | util=%s%% %d/%d %s | clock active"
         % (percent, leds_on, half, bar)
     )
