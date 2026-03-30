@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /home/bcavenagh/projects/claude-light-puck/claude-lightpuck/rpi-5/main.py
-WorkingDirectory=/home/bcavenagh/projects/claude-light-puck/claude-lightpuck/rpi-5
+ExecStart=/usr/bin/python3 /home/bcavs/projects/claude-light-puck/rpi-5/main.py
+WorkingDirectory=/home/bcavs/projects/claude-light-puck/rpi-5
 Restart=on-failure
 RestartSec=5
 
