@@ -2,7 +2,7 @@ import requests
 import json
 import time
 
-PICO_URL = "http://<pico-ip>/update"
+PICO_URL = "http://100.81.93.115:8080/update"
 
 with open("test_payloads.json") as f:
     payloads = json.load(f)

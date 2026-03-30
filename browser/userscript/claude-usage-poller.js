@@ -1,6 +1,6 @@
 (async () => {
-  const ORG_ID = "<your-org-id>";
-  const PICO_URL = "http://<pico-ip>/update";
+  const ORG_ID = "2597a8c5-04b5-4cc5-8f80-b5240e6bd9ff";
+  const PICO_URL = "http://100.81.93.115:8080/update";
 
   async function poll() {
     try {
