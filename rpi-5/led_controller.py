@@ -89,7 +89,7 @@ def update_strip_dual(five_hour_pct, seven_day_pct):
 
 
 def clock_sweep():
-    """A dim blue dot sweeps around the ring once per minute, with a fading tail."""
+    """A dim blue dot sweeps around the full ring once per minute, with a fading tail."""
     seconds = time.time() % 60
     pos = seconds / 60.0 * LED_COUNT
     tail = 4
@@ -101,6 +101,37 @@ def clock_sweep():
         else:
             _strip[i] = (0, 0, 0)
     _strip.show()
+
+
+def update_strip_split(percent):
+    """Split personality: top half (0-11) = usage fill, bottom half (12-23) = clock sweep."""
+    half = LED_COUNT // 2
+
+    # Top half: usage fill from LED 0 clockwise
+    leds_on = percent_to_leds(percent, half)
+    color = _usage_color(percent)
+    for i in range(half):
+        _strip[i] = color if i < leds_on else (0, 0, 0)
+
+    # Bottom half: clock sweep (one lap per minute across 12 LEDs)
+    seconds = time.time() % 60
+    pos = seconds / 60.0 * half
+    tail = 3
+    for i in range(half):
+        dist = (pos - i) % half
+        if dist < tail:
+            fade = 1.0 - (dist / tail)
+            _strip[half + i] = (0, 0, int(80 * fade * fade))
+        else:
+            _strip[half + i] = (0, 0, 0)
+
+    _strip.show()
+
+    bar = "#" * leds_on + "." * (half - leds_on)
+    print(
+        "[LED] split | util=%s%% %d/%d %s | clock active"
+        % (percent, leds_on, half, bar)
+    )
 
 
 def heartbeat_breathe():

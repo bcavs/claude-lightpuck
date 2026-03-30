@@ -247,6 +247,39 @@ def startup(num_pixels=NUM_PIXELS):
     pixels.show()
 
 
+def split(duration=10):
+    """Split personality: top half usage fill, bottom half clock sweep."""
+    half = NUM_PIXELS // 2
+    pct = 65
+    tail = 3
+
+    def usage_color(p):
+        if p <= 50:
+            return (int(255 * p / 50), 255, 0)
+        return (255, int(255 * (100 - p) / 50), 0)
+
+    leds_on = int(pct / 100.0 * half)
+    color = usage_color(pct)
+
+    start = time.time()
+    while time.time() - start < duration:
+        # Top half: static usage
+        for i in range(half):
+            pixels[i] = color if i < leds_on else (0, 0, 0)
+        # Bottom half: clock sweep
+        seconds = time.time() % 60
+        pos = seconds / 60.0 * half
+        for i in range(half):
+            dist = (pos - i) % half
+            if dist < tail:
+                fade = 1.0 - (dist / tail)
+                pixels[half + i] = (0, 0, int(80 * fade * fade))
+            else:
+                pixels[half + i] = (0, 0, 0)
+        pixels.show()
+        time.sleep(0.05)
+
+
 ANIMATIONS = {
     "fill": fill_up,
     "rainbow": rainbow_cycle,
@@ -260,6 +293,7 @@ ANIMATIONS = {
     "dual": dual_ring,
     "flash": status_flash,
     "startup": startup,
+    "split": split,
 }
 
 
