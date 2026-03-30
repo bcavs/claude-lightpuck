@@ -51,20 +51,22 @@ def percent_to_leds(percent, total_leds):
 SPARK_PERIOD = 3.0  # seconds per sweep across the lit LEDs
 
 
-def _spark_overlay(base_color, index, leds_on):
-    """Blend a white spark onto a lit LED. Returns the modified color."""
+def _spark_overlay(base_color, index, leds_on, stale=False):
+    """Blend a spark onto a lit LED. White when connected, red when stale."""
     if leds_on <= 0:
         return base_color
-    # Spark position cycles through the lit range
     pos = (time.time() % SPARK_PERIOD) / SPARK_PERIOD * leds_on
     dist = abs(index - pos)
     if dist > 1.0:
         return base_color
-    # Blend toward white based on proximity
-    blend = 1.0 - dist
-    r = int(base_color[0] + (255 - base_color[0]) * blend * 0.7)
-    g = int(base_color[1] + (255 - base_color[1]) * blend * 0.7)
-    b = int(base_color[2] + (255 - base_color[2]) * blend * 0.7)
+    blend = (1.0 - dist) * 0.7
+    if stale:
+        target = (255, 0, 0)
+    else:
+        target = (255, 255, 255)
+    r = int(base_color[0] + (target[0] - base_color[0]) * blend)
+    g = int(base_color[1] + (target[1] - base_color[1]) * blend)
+    b = int(base_color[2] + (target[2] - base_color[2]) * blend)
     return (r, g, b)
 
 
@@ -179,12 +181,22 @@ def update_strip_split(percent):
     )
 
 
-def heartbeat_breathe():
-    """Slow amber breathing pulse — called repeatedly from the main loop."""
+def heartbeat_breathe(percent=None, leds_on=None, total_leds=None):
+    """Breathing pulse showing last known usage level, or amber if no data."""
     bright = (math.sin(time.time() * 1.5 - math.pi / 2) + 1) / 2
-    r = int(255 * bright)
-    g = int(100 * bright)
-    _strip.fill((r, g, 0))
+    # Keep between 0.15 and 1.0 so usage is always readable
+    bright = 0.15 + bright * 0.85
+
+    if percent is not None and leds_on is not None and leds_on > 0:
+        base = (0, 0, int(150 * bright))
+        for i in range(total_leds):
+            if i < leds_on:
+                _strip[i] = _spark_overlay(base, i, leds_on, stale=True)
+            else:
+                _strip[i] = (0, 0, 0)
+    else:
+        _strip.fill((0, 0, int(150 * bright)))
+
     _strip.show()
 
 

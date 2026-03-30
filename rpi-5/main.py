@@ -66,7 +66,11 @@ def main() -> None:
                         update_strip(percent, leds_on, LED_COUNT, MODE)
                         stop.wait(0.05)
             else:
-                heartbeat_breathe()
+                percent = server.latest_usage.get(f"{MODE}_utilization", 0)
+                if MODE == "dual":
+                    percent = server.latest_usage.get("five_hour_utilization", 0)
+                leds_on = percent_to_leds(percent, LED_COUNT)
+                heartbeat_breathe(percent, leds_on, LED_COUNT)
                 stop.wait(0.05)
     except KeyboardInterrupt:
         pass
