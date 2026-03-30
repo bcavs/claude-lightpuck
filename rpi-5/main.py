@@ -5,33 +5,41 @@ Raspberry Pi 4 LED server for Claude Lightpuck.
 Run on the Pi:
   cd claude-lightpuck/rpi-5 && sudo python3 main.py
 """
+import time
 import threading
 
 from http.server import ThreadingHTTPServer
 
-from config import HOST, HTTP_PORT, LED_COUNT, MODE
-from led_controller import init_strip, update_strip, clear_strip, percent_to_leds
-from server import LightpuckHandler, latest_usage
+from config import HOST, HTTP_PORT, LED_COUNT, MODE, HEARTBEAT_TIMEOUT
+from led_controller import (
+    init_strip, update_strip, clear_strip, percent_to_leds, heartbeat_breathe,
+)
+from server import LightpuckHandler, latest_usage, last_update_time
+
+
+def _is_connected():
+    return last_update_time > 0 and (time.monotonic() - last_update_time) < HEARTBEAT_TIMEOUT
 
 
 def main() -> None:
-    # Initialize strip in main thread
     init_strip()
 
-    # Run HTTP server in a background thread
     httpd = ThreadingHTTPServer((HOST, HTTP_PORT), LightpuckHandler)
     server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     server_thread.start()
     print("HTTP server on http://%s:%s (POST /update, GET /health)" % (HOST, HTTP_PORT))
 
-    # LED update loop runs in main thread
     stop = threading.Event()
     try:
         while not stop.is_set():
-            percent = latest_usage.get(f"{MODE}_utilization", 0)
-            leds_on = percent_to_leds(percent, LED_COUNT)
-            update_strip(percent, leds_on, LED_COUNT, MODE)
-            stop.wait(5)
+            if _is_connected():
+                percent = latest_usage.get(f"{MODE}_utilization", 0)
+                leds_on = percent_to_leds(percent, LED_COUNT)
+                update_strip(percent, leds_on, LED_COUNT, MODE)
+                stop.wait(5)
+            else:
+                heartbeat_breathe()
+                stop.wait(0.05)
     except KeyboardInterrupt:
         pass
 

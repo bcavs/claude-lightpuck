@@ -1,3 +1,6 @@
+import math
+import time
+
 import board
 import neopixel
 
@@ -59,6 +62,15 @@ def update_strip(percent, leds_on, total_leds, mode):
         "[LED] mode=%s util=%s%% | %d/%d on | %s"
         % (mode, percent, leds_on, total_leds, bar)
     )
+
+
+def heartbeat_breathe():
+    """Slow amber breathing pulse — called repeatedly from the main loop."""
+    bright = (math.sin(time.time() * 1.5 - math.pi / 2) + 1) / 2
+    r = int(255 * bright)
+    g = int(100 * bright)
+    _strip.fill((r, g, 0))
+    _strip.show()
 
 
 def clear_strip():

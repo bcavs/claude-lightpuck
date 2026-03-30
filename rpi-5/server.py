@@ -1,4 +1,5 @@
 import json
+import time
 
 from config import CORS_ALLOW_ORIGIN
 from http.server import BaseHTTPRequestHandler
@@ -7,6 +8,8 @@ latest_usage = {
     "five_hour_utilization": 0,
     "seven_day_utilization": 0,
 }
+
+last_update_time = 0.0
 
 
 def _cors_headers():
@@ -62,6 +65,8 @@ class LightpuckHandler(BaseHTTPRequestHandler):
             if not isinstance(data, dict):
                 raise ValueError("not an object")
             latest_usage.update(data)
+            global last_update_time
+            last_update_time = time.monotonic()
             print("Updated usage:", latest_usage)
             body = b"OK"
             self.send_response(200)
