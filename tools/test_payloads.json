@@ -1,0 +1,17 @@
+[
+  {
+    "five_hour_utilization": 10,
+    "seven_day_utilization": 22,
+    "timestamp": "2026-03-29T21:00:00Z"
+  },
+  {
+    "five_hour_utilization": 65,
+    "seven_day_utilization": 54,
+    "timestamp": "2026-03-29T21:05:00Z"
+  },
+  {
+    "five_hour_utilization": 95,
+    "seven_day_utilization": 88,
+    "timestamp": "2026-03-29T21:10:00Z"
+  }
+]

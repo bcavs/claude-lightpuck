@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "five_hour_utilization": { "type": "number" },
+    "five_hour_resets_at": { "type": ["string", "null"] },
+    "seven_day_utilization": { "type": "number" },
+    "seven_day_resets_at": { "type": ["string", "null"] },
+    "timestamp": { "type": "string" }
+  },
+  "required": [
+    "five_hour_utilization",
+    "seven_day_utilization"
+  ]
+}

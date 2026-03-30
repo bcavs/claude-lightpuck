@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+.env
+secrets.py
+pico/secrets.py
+node_modules/
+dist/
