@@ -1,8 +1,21 @@
-import board
-import neopixel
+from rpi_ws281x import PixelStrip, Color
 import time
 
-pixels = neopixel.NeoPixel(board.D10, 24, brightness=0.2, auto_write=True)
+LED_COUNT = 24
+LED_PIN = 18
+LED_BRIGHTNESS = 50
 
-pixels.fill((255, 0, 0))  # RED
+strip = PixelStrip(LED_COUNT, LED_PIN, brightness=LED_BRIGHTNESS)
+strip.begin()
+
+for i in range(LED_COUNT):
+    strip.setPixelColor(i, Color(255, 0, 0))
+strip.show()
+
+print("LEDs should be red. Waiting 10 seconds...")
 time.sleep(10)
+
+for i in range(LED_COUNT):
+    strip.setPixelColor(i, Color(0, 0, 0))
+strip.show()
+print("Done.")
