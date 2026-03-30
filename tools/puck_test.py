@@ -2,7 +2,7 @@ from rpi_ws281x import PixelStrip, Color
 import time
 
 LED_COUNT = 24
-LED_PIN = 18
+LED_PIN = 10
 LED_BRIGHTNESS = 50
 
 strip = PixelStrip(LED_COUNT, LED_PIN, brightness=LED_BRIGHTNESS)
