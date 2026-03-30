@@ -1,5 +1,5 @@
 LED_PIN = 18
-LED_COUNT = 30
+LED_COUNT = 24
 MODE = "five_hour"  # or "seven_day"
 
 HOST = "0.0.0.0"
