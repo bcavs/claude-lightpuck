@@ -183,21 +183,17 @@ def update_strip_split(percent):
     )
 
 
-def heartbeat_breathe(percent=None, leds_on=None, total_leds=None):
-    """Breathing pulse showing last known usage level, or amber if no data."""
-    bright = (math.sin(time.time() * 1.5 - math.pi / 2) + 1) / 2
-    # Keep very dim — range 0.05 to 0.25
-    bright = 0.05 + bright * 0.2
-
+def stale_display(percent=None, leds_on=None, total_leds=None):
+    """Static dim blue showing last known usage level, with dim spark."""
     if percent is not None and leds_on is not None and leds_on > 0:
-        base = (0, 0, int(80 * bright))
+        base = (0, 0, 15)
         for i in range(total_leds):
             if i < leds_on:
                 _strip[i] = _spark_overlay(base, i, leds_on, stale=True)
             else:
                 _strip[i] = (0, 0, 0)
     else:
-        _strip.fill((0, 0, int(80 * bright)))
+        _strip.fill((0, 0, 15))
 
     _strip.show()
 

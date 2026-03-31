@@ -13,7 +13,7 @@ from http.server import ThreadingHTTPServer
 from config import HOST, HTTP_PORT, LED_COUNT, MODE, HEARTBEAT_TIMEOUT
 from led_controller import (
     init_strip, update_strip, update_strip_dual, update_strip_split, clear_strip,
-    percent_to_leds, heartbeat_breathe, spin_confirm, clock_sweep, startup_animation,
+    percent_to_leds, stale_display, spin_confirm, clock_sweep, startup_animation,
 )
 import server
 
@@ -73,7 +73,7 @@ def main() -> None:
                 if MODE == "dual":
                     percent = server.latest_usage.get("five_hour_utilization", 0)
                 leds_on = percent_to_leds(percent, LED_COUNT)
-                heartbeat_breathe(percent, leds_on, LED_COUNT)
+                stale_display(percent, leds_on, LED_COUNT)
                 stop.wait(0.05)
     except KeyboardInterrupt:
         pass
