@@ -280,34 +280,65 @@ def split(duration=10):
         time.sleep(0.05)
 
 
+def _test_usage_color(pct):
+    """Dimmed usage color matching the server's _BASE_BRIGHTNESS=0.5."""
+    b = 0.5
+    if pct <= 50:
+        return (int(255 * (pct / 50) * b), int(255 * b), 0)
+    return (int(255 * b), int(255 * ((100 - pct) / 50) * b), 0)
+
+
+def _test_spark(base, index, leds_on, t):
+    """Cyan-tinted spark matching the server's active spark."""
+    period = 3.0
+    pos = (t % period) / period * leds_on
+    dist = abs(index - pos)
+    if dist > 1.0:
+        return base
+    blend = (1.0 - dist) * 0.7
+    return (
+        int(max(0, base[0] * (1 - blend * 0.5))),
+        int(min(255, base[1] + (255 - base[1]) * blend * 0.4)),
+        int(min(255, base[2] + 200 * blend)),
+    )
+
+
 def spark(duration=8):
-    """Usage fill at 65% with a white spark sweeping across the lit LEDs."""
+    """Usage fill at 65% with a cyan spark sweeping across the lit LEDs."""
     pct = 65
     leds_on = int(pct / 100.0 * NUM_PIXELS)
-    if pct <= 50:
-        color = (int(255 * pct / 50), 255, 0)
-    else:
-        color = (255, int(255 * (100 - pct) / 50), 0)
+    color = _test_usage_color(pct)
 
-    period = 3.0
     start = time.time()
     while time.time() - start < duration:
-        pos = (time.time() % period) / period * leds_on
         for i in range(NUM_PIXELS):
             if i < leds_on:
-                dist = abs(i - pos)
-                if dist <= 1.0:
-                    blend = 1.0 - dist
-                    r = int(color[0] + (255 - color[0]) * blend * 0.7)
-                    g = int(color[1] + (255 - color[1]) * blend * 0.7)
-                    b = int(color[2] + (255 - color[2]) * blend * 0.7)
-                    pixels[i] = (r, g, b)
-                else:
-                    pixels[i] = color
+                pixels[i] = _test_spark(color, i, leds_on, time.time())
             else:
                 pixels[i] = (0, 0, 0)
         pixels.show()
         time.sleep(0.03)
+
+
+def levels():
+    """Show usage at 10%, 25%, 50%, 75%, 90%, 100% with spark — 5 seconds each."""
+    test_pcts = [10, 25, 50, 75, 90, 100]
+    for pct in test_pcts:
+        leds_on = int(pct / 100.0 * NUM_PIXELS)
+        color = _test_usage_color(pct)
+        print("  %d%% — %d/%d LEDs — color %s" % (pct, leds_on, NUM_PIXELS, color))
+        start = time.time()
+        while time.time() - start < 5:
+            for i in range(NUM_PIXELS):
+                if i < leds_on:
+                    pixels[i] = _test_spark(color, i, leds_on, time.time())
+                else:
+                    pixels[i] = (0, 0, 0)
+            pixels.show()
+            time.sleep(0.03)
+        pixels.fill((0, 0, 0))
+        pixels.show()
+        time.sleep(0.3)
 
 
 ANIMATIONS = {
@@ -325,6 +356,7 @@ ANIMATIONS = {
     "startup": startup,
     "split": split,
     "spark": spark,
+    "levels": levels,
 }
 
 

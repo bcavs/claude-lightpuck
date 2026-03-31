@@ -61,20 +61,20 @@ def _spark_overlay(base_color, index, leds_on, stale=False):
         return base_color
     blend = (1.0 - dist)
     if stale:
-        # Brighten the blue toward a lighter blue
-        boost = blend * 0.6
+        # Just boost the blue channel slightly
+        boost = 1.0 + blend * 0.5
         return (
-            int(min(255, base_color[0] + 40 * boost)),
-            int(min(255, base_color[1] + 40 * boost)),
-            int(min(255, base_color[2] + 105 * boost)),
+            base_color[0],
+            base_color[1],
+            int(min(255, base_color[2] * boost)),
         )
     else:
-        # Brighten the existing color — keeps the same hue, just more intense
-        boost = 1.0 + blend * 0.6
+        # Shift toward cyan/blue so it's visible against green/yellow/red
+        boost = blend * 0.7
         return (
-            int(min(255, base_color[0] * boost)),
-            int(min(255, base_color[1] * boost)),
-            int(min(255, base_color[2] * boost)),
+            int(max(0, base_color[0] * (1 - boost * 0.5))),
+            int(min(255, base_color[1] + (255 - base_color[1]) * boost * 0.4)),
+            int(min(255, base_color[2] + 200 * boost)),
         )
 
 
@@ -196,18 +196,18 @@ def update_strip_split(percent):
 def heartbeat_breathe(percent=None, leds_on=None, total_leds=None):
     """Breathing pulse showing last known usage level, or amber if no data."""
     bright = (math.sin(time.time() * 1.5 - math.pi / 2) + 1) / 2
-    # Keep between 0.15 and 1.0 so usage is always readable
-    bright = 0.15 + bright * 0.85
+    # Keep very dim — range 0.05 to 0.25
+    bright = 0.05 + bright * 0.2
 
     if percent is not None and leds_on is not None and leds_on > 0:
-        base = (0, 0, int(150 * bright))
+        base = (0, 0, int(80 * bright))
         for i in range(total_leds):
             if i < leds_on:
                 _strip[i] = _spark_overlay(base, i, leds_on, stale=True)
             else:
                 _strip[i] = (0, 0, 0)
     else:
-        _strip.fill((0, 0, int(150 * bright)))
+        _strip.fill((0, 0, int(80 * bright)))
 
     _strip.show()
 
