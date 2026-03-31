@@ -78,15 +78,19 @@ def _spark_overlay(base_color, index, leds_on, stale=False):
         )
 
 
+_BASE_BRIGHTNESS = 0.5  # dim the base so the spark stands out
+
+
 def _usage_color(percent):
-    """Green at 0%, yellow at 50%, red at 100%."""
+    """Green at 0%, yellow at 50%, red at 100%. Dimmed by _BASE_BRIGHTNESS."""
     p = max(0, min(100, float(percent)))
+    b = _BASE_BRIGHTNESS
     if p <= 50:
-        r = int(255 * (p / 50))
-        g = 255
+        r = int(255 * (p / 50) * b)
+        g = int(255 * b)
     else:
-        r = 255
-        g = int(255 * ((100 - p) / 50))
+        r = int(255 * b)
+        g = int(255 * ((100 - p) / 50) * b)
     return (r, g, 0)
 
 
