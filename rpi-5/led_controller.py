@@ -69,12 +69,12 @@ def _spark_overlay(base_color, index, leds_on, stale=False):
             int(min(255, base_color[2] + 105 * boost)),
         )
     else:
-        # Brighten the usage color subtly
-        boost = blend * 0.4
+        # Brighten the existing color — keeps the same hue, just more intense
+        boost = 1.0 + blend * 0.6
         return (
-            int(min(255, base_color[0] + (255 - base_color[0]) * boost)),
-            int(min(255, base_color[1] + (255 - base_color[1]) * boost)),
-            int(min(255, base_color[2] + (255 - base_color[2]) * boost)),
+            int(min(255, base_color[0] * boost)),
+            int(min(255, base_color[1] * boost)),
+            int(min(255, base_color[2] * boost)),
         )
 
 
