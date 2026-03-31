@@ -52,22 +52,30 @@ SPARK_PERIOD = 3.0  # seconds per sweep across the lit LEDs
 
 
 def _spark_overlay(base_color, index, leds_on, stale=False):
-    """Blend a spark onto a lit LED. White when connected, red when stale."""
+    """Brighten a lit LED as the spark passes. Subtle glow, not a color change."""
     if leds_on <= 0:
         return base_color
     pos = (time.time() % SPARK_PERIOD) / SPARK_PERIOD * leds_on
     dist = abs(index - pos)
     if dist > 1.0:
         return base_color
-    blend = (1.0 - dist) * 0.7
+    blend = (1.0 - dist)
     if stale:
-        target = (255, 0, 0)
+        # Brighten the blue toward a lighter blue
+        boost = blend * 0.6
+        return (
+            int(min(255, base_color[0] + 40 * boost)),
+            int(min(255, base_color[1] + 40 * boost)),
+            int(min(255, base_color[2] + 105 * boost)),
+        )
     else:
-        target = (255, 255, 255)
-    r = int(base_color[0] + (target[0] - base_color[0]) * blend)
-    g = int(base_color[1] + (target[1] - base_color[1]) * blend)
-    b = int(base_color[2] + (target[2] - base_color[2]) * blend)
-    return (r, g, b)
+        # Brighten the usage color subtly
+        boost = blend * 0.4
+        return (
+            int(min(255, base_color[0] + (255 - base_color[0]) * boost)),
+            int(min(255, base_color[1] + (255 - base_color[1]) * boost)),
+            int(min(255, base_color[2] + (255 - base_color[2]) * boost)),
+        )
 
 
 def _usage_color(percent):
@@ -200,12 +208,23 @@ def heartbeat_breathe(percent=None, leds_on=None, total_leds=None):
     _strip.show()
 
 
-def flash(color=(0, 255, 0), duration=0.4):
-    """Brief full-ring flash, then off. Called from the main thread."""
-    _strip.fill(color)
-    _strip.show()
-    time.sleep(duration)
-    _strip.fill((0, 0, 0))
+def spin_confirm(percent, total_leds):
+    """Rotate the usage fill around the full ring and back to confirm data received."""
+    leds_on = percent_to_leds(percent, total_leds)
+    if leds_on <= 0:
+        return
+    color = _usage_color(percent)
+    steps = total_leds
+    for step in range(steps + 1):
+        offset = step % total_leds
+        for i in range(total_leds):
+            src = (i - offset) % total_leds
+            _strip[i] = color if src < leds_on else (0, 0, 0)
+        _strip.show()
+        time.sleep(0.03)
+    # Settle back to normal position
+    for i in range(total_leds):
+        _strip[i] = color if i < leds_on else (0, 0, 0)
     _strip.show()
 
 

@@ -13,7 +13,7 @@ from http.server import ThreadingHTTPServer
 from config import HOST, HTTP_PORT, LED_COUNT, MODE, HEARTBEAT_TIMEOUT
 from led_controller import (
     init_strip, update_strip, update_strip_dual, update_strip_split, clear_strip,
-    percent_to_leds, heartbeat_breathe, flash, clock_sweep, startup_animation,
+    percent_to_leds, heartbeat_breathe, spin_confirm, clock_sweep, startup_animation,
 )
 import server
 
@@ -36,10 +36,13 @@ def main() -> None:
     try:
         while not stop.is_set():
             if _is_connected():
-                # Green flash when new data arrives
+                # Spin animation when new data arrives
                 if server.last_update_time != last_seen:
                     last_seen = server.last_update_time
-                    flash((0, 255, 0))
+                    percent = server.latest_usage.get("five_hour_utilization", 0)
+                    if MODE != "dual":
+                        percent = server.latest_usage.get(f"{MODE}_utilization", 0)
+                    spin_confirm(percent, LED_COUNT)
 
                 if MODE == "split":
                     percent = server.latest_usage.get("five_hour_utilization", 0)
