@@ -295,12 +295,8 @@ def _test_spark(base, index, leds_on, t):
     dist = abs(index - pos)
     if dist > 1.0:
         return base
-    blend = (1.0 - dist) * 0.7
-    return (
-        int(max(0, base[0] * (1 - blend * 0.5))),
-        int(min(255, base[1] + (255 - base[1]) * blend * 0.4)),
-        int(min(255, base[2] + 200 * blend)),
-    )
+    dim = 1.0 - (1.0 - dist) * 0.9
+    return (int(base[0] * dim), int(base[1] * dim), int(base[2] * dim))
 
 
 def spark(duration=8):

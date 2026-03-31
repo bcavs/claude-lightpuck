@@ -52,30 +52,20 @@ SPARK_PERIOD = 3.0  # seconds per sweep across the lit LEDs
 
 
 def _spark_overlay(base_color, index, leds_on, stale=False):
-    """Brighten a lit LED as the spark passes. Subtle glow, not a color change."""
+    """Dim a lit LED as the spark passes — same color, drops to 10% brightness."""
     if leds_on <= 0:
         return base_color
     pos = (time.time() % SPARK_PERIOD) / SPARK_PERIOD * leds_on
     dist = abs(index - pos)
     if dist > 1.0:
         return base_color
-    blend = (1.0 - dist)
-    if stale:
-        # Just boost the blue channel slightly
-        boost = 1.0 + blend * 0.5
-        return (
-            base_color[0],
-            base_color[1],
-            int(min(255, base_color[2] * boost)),
-        )
-    else:
-        # Shift toward cyan/blue so it's visible against green/yellow/red
-        boost = blend * 0.7
-        return (
-            int(max(0, base_color[0] * (1 - boost * 0.5))),
-            int(min(255, base_color[1] + (255 - base_color[1]) * boost * 0.4)),
-            int(min(255, base_color[2] + 200 * boost)),
-        )
+    # Scale from 1.0 (full) down to 0.1 (10%) at the center of the spark
+    dim = 1.0 - (1.0 - dist) * 0.9
+    return (
+        int(base_color[0] * dim),
+        int(base_color[1] * dim),
+        int(base_color[2] * dim),
+    )
 
 
 _BASE_BRIGHTNESS = 0.5  # dim the base so the spark stands out
